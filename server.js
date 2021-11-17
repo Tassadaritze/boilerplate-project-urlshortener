@@ -26,18 +26,18 @@ const urls = [];
 
 app.post("/api/shorturl", bp.urlencoded({ extended: false }), (req, res, done) => {
     console.log(req.body.url);
-    let npurl = req.body.url.substring(req.body.url.search(/\/\w/g) + 1);
+    let npurl = req.body.url.substring(req.body.url.search(/\/{2}\w/g) + 2);
     console.log(npurl);
     if (npurl.search(/\w\//g) !== -1) npurl = npurl.substring(0, npurl.search(/\w\//g) + 1);
     console.log(npurl);
     dns.lookup(npurl, (err, address) => {
+        console.log(err);
         if (err) res.json({ error: "invalid url" });
+        else if (!urls.includes(req.body.url)) {
+            urls.push(req.body.url);
+            res.json({ original_url: req.body.url, short_url: urls.length - 1 });
+        }
     });
-    if (!urls.includes(req.body.url)) {
-        urls.push(req.body.url);
-        res.json({ original_url: req.body.url, short_url: urls.length - 1 });
-    }
-    done();
 });
 
 app.get("/api/shorturl/:url", (req, res) => {
